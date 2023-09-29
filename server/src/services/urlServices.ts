@@ -40,3 +40,13 @@ export const getUrlByUrlCode = async(urlCode:string)=>{
         
     }
 }
+
+export const getUrlsForUser = async (userId: string) => {
+    try {
+      const urls = await Url.find({ userId: userId }).exec();
+      console.log("urls", urls);
+      return urls;
+    } catch (error) {
+      throw new Error("Interal server error");
+    }
+  };

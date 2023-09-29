@@ -1,7 +1,7 @@
 import express,{Router} from 'express'
 
 import Url from '../models/UrlModel'
-import {createUrl, getUrlByUrlCode} from '../services/urlServices'
+import {createUrl, getUrlByUrlCode,getUrlsForUser} from '../services/urlServices'
 import { verifyAccessToken } from '../middleware/authToken'
 
 const router = Router()
@@ -47,6 +47,23 @@ router.get("/:urlCode",async(req,res)=>{
     }
 })
 
-
+router.get(
+    "/user/:userId",
+    verifyAccessToken,
+    async (req,res) => {
+      const userId = req.params.userId;
+      if (userId !== req["user"].id) {
+        res.status(401).json("Access denied");
+        return;
+      }
+  
+      try {
+        const data = await getUrlsForUser(userId);
+        res.status(200).json(data);
+      } catch (error) {
+        res.status(500).json("Internal server error");
+      }
+    }
+  );
 
 export default router;
