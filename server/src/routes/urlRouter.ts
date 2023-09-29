@@ -2,12 +2,13 @@ import express,{Router} from 'express'
 
 import Url from '../models/UrlModel'
 import {createUrl, getUrlByUrlCode} from '../services/urlServices'
+import { verifyAccessToken } from '../middleware/authToken'
 
 const router = Router()
 
 
 
-router.post("/",async(req,res)=>{
+router.post("/",verifyAccessToken,async(req,res)=>{
     const {originalLink}=req.body
 // console.log(originalLink);
 
