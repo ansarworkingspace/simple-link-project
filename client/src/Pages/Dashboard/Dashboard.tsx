@@ -1,9 +1,17 @@
 import React from 'react'
+import moment from 'moment';
 import TextInput from '../../Components/TextInput/TextInput'
 import Button from '../../Components/Button/Button'
 import '../Dashboard/Dashboard.css'
 
 import httpClient from "../../Services/HttpClient";
+
+import { UrlType } from "../../Types";
+import { createUrl, getUrlsForUser,deleteUrlByUrlCode } from "../../Services/UrlServices";
+import UrlTable from "../../Components/UrlTable/UrlTable";
+
+
+
 
 const Dashboard = () => {
   const [showUrlAddView, setShowUrlAddView] = React.useState(false);
@@ -12,6 +20,7 @@ const Dashboard = () => {
     name: "",
   });
   const [shortUrl, setShortUrl] = React.useState("");
+  const [userUrlData, setUserUrlData] = React.useState<Array<UrlType>>([]);
 
   const postDataToApi = async () => {
     if (!urlPayload.originalLink) {
@@ -27,6 +36,20 @@ const Dashboard = () => {
     }
   };
 
+  //Fetch urls for users
+  const fetchUrlsForUser = async () => {
+    try {
+      const urlData = await getUrlsForUser();
+
+      setUserUrlData(urlData);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchUrlsForUser();
+  }, []);
   const renderEmptyState = () => {
     return (
       <div className="dashboard__empty-state">
@@ -78,6 +101,57 @@ const Dashboard = () => {
     <div className="dashboard">
       {showUrlAddView ? renderAddNewUrl() : renderEmptyState()}
       {Boolean(shortUrl) && <h3>{shortUrl}</h3>}
+      <h3>Shortened url list</h3>
+      <>
+        <UrlTable
+          columns={tableColumn}
+          rows={userUrlData.map(convertRowDataToTableData)}
+        />
+      </>
+    </div>
+  );
+};
+
+const tableColumn = [
+  { label: "Name", field: "name" },
+  { label: "Link", field: "urlCode" },
+  { label: "Visit", field: "visitCount" },
+  { label: "Added date", field: "createdAt" },
+  { label: "Actions", field: "actions", hideLabelinMobile: true },
+];
+
+const convertRowDataToTableData = (data: UrlType) => {
+  return {
+    ...data,
+    urlCode: `http://localhost:5001/api/url/${data.urlCode}`,
+    createdAt: moment.unix(Number(data.createdAt) / 1000).format("l"),
+    actions: renderActions(data),
+  };
+};
+//delete url
+const deleteUrl = async (urlCode: string) => {
+  await deleteUrlByUrlCode(urlCode);
+};
+
+const renderActions = (data: UrlType): React.ReactNode => {
+  return (
+    <div
+      style={{
+        display: "flex",
+        maxWidth: 140,
+        justifyContent: "space-between",
+      }}
+    >
+      <Button
+        label="Edit"
+        variant="outlined-primary"
+        onClick={() => console.log(data)}
+      />
+      <Button
+        label="Delete"
+        variant="outlined-secondary"
+        onClick={() => deleteUrl(data.urlCode)}
+      />
     </div>
   );
 };
