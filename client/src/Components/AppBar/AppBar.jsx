@@ -31,7 +31,7 @@ const AppBar = () => {
           <h3 className="active">Dashboard</h3>
           {/* >Logout</h3> */}
           {isLoggedIn ? (
-            <h3  onClick={() => logout(navigate)} >Logout</h3>
+            <h3  onClick={() => logout(navigate)} style={{cursor:"pointer"}}>Logout</h3>
           ) : (
             ""
           )}

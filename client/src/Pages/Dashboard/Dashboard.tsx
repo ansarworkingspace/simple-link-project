@@ -5,7 +5,7 @@ import Button from '../../Components/Button/Button'
 import '../Dashboard/Dashboard.css'
 
 import httpClient from "../../Services/HttpClient";
-
+import Modal from 'react-modal'
 import { UrlType } from "../../Types";
 import { createUrl, getUrlsForUser,deleteUrlByUrlCode } from "../../Services/UrlServices";
 import UrlTable from "../../Components/UrlTable/UrlTable";
@@ -19,21 +19,24 @@ const Dashboard = () => {
     originalLink: "",
     name: "",
   });
-  const [shortUrl, setShortUrl] = React.useState("");
+  // const [shortUrl, setShortUrl] = React.useState("");
   const [userUrlData, setUserUrlData] = React.useState<Array<UrlType>>([]);
+  
+  const [refreshFlag, setRefreshFlag] = React.useState(false);
+
+
+
+
+
 
   const postDataToApi = async () => {
     if (!urlPayload.originalLink) {
       alert("Please provide original url");
       return;
     }
-    try {
-      const { data } = await httpClient.post("url", urlPayload);
-      console.log("data from back-end", data);
-      setShortUrl(`http://localhost:5001/api/url/${data.urlCode}`);
-    } catch (error) {
-      console.log(error);
-    }
+    await createUrl(urlPayload);
+    fetchUrlsForUser();
+    setShowUrlAddView(false);
   };
 
   //Fetch urls for users
@@ -50,10 +53,13 @@ const Dashboard = () => {
   React.useEffect(() => {
     fetchUrlsForUser();
   }, []);
+
+
+
   const renderEmptyState = () => {
     return (
       <div className="dashboard__empty-state">
-        <p>You don’t have any short url</p>
+        <p>You can short your Url Easly with Easy Link</p>
         <Button
           onClick={() => setShowUrlAddView(true)}
           label="Create a new short url"
@@ -62,6 +68,9 @@ const Dashboard = () => {
       </div>
     );
   };
+
+
+
 
   const renderAddNewUrl = () => {
     return (
@@ -100,7 +109,8 @@ const Dashboard = () => {
   return (
     <div className="dashboard">
       {showUrlAddView ? renderAddNewUrl() : renderEmptyState()}
-      {Boolean(shortUrl) && <h3>{shortUrl}</h3>}
+      {/* {Boolean(shortUrl) && <h3>{shortUrl}</h3>} */}
+    
       <h3>Shortened url list</h3>
       <>
         <UrlTable
@@ -111,6 +121,16 @@ const Dashboard = () => {
     </div>
   );
 };
+
+
+
+
+
+
+
+
+
+
 
 const tableColumn = [
   { label: "Name", field: "name" },
@@ -128,12 +148,36 @@ const convertRowDataToTableData = (data: UrlType) => {
     actions: renderActions(data),
   };
 };
+
+
+
+
+
+
 //delete url
+// const deleteUrl = async (urlCode: string) => {
+//   await deleteUrlByUrlCode(urlCode);
+  
+  
+// };
+
+
 const deleteUrl = async (urlCode: string) => {
-  await deleteUrlByUrlCode(urlCode);
+  try {
+    await deleteUrlByUrlCode(urlCode);
+    // After successful deletion, refresh the page
+    window.location.reload();
+  } catch (error) {
+    console.error(error);
+  }
 };
 
+
+
 const renderActions = (data: UrlType): React.ReactNode => {
+ 
+  
+ 
   return (
     <div
       style={{
@@ -142,16 +186,21 @@ const renderActions = (data: UrlType): React.ReactNode => {
         justifyContent: "space-between",
       }}
     >
-      <Button
-        label="Edit"
-        variant="outlined-primary"
-        onClick={() => console.log(data)}
-      />
-      <Button
+   
+
+<Button
         label="Delete"
         variant="outlined-secondary"
-        onClick={() => deleteUrl(data.urlCode)}
+        onClick={() => {
+          if (
+            window.confirm(`Are you sure you want to delete: ${data.name}?`)
+          ) {
+            deleteUrl(data.urlCode);
+          }
+        }}
       />
+
+
     </div>
   );
 };

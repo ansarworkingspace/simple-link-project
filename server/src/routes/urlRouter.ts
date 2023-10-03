@@ -1,7 +1,7 @@
 import express,{Router} from 'express'
 
 import Url from '../models/UrlModel'
-import {createUrl, getUrlByUrlCode,getUrlsForUser} from '../services/urlServices'
+import {createUrl, getUrlByUrlCode,getUrlsForUser, deleteUrlByUrlCode,} from '../services/urlServices'
 import { verifyAccessToken } from '../middleware/authToken'
 
 const router = Router()
@@ -63,4 +63,26 @@ router.get(
     }
   }
 );
+
+
+
+router.delete(
+  "/:urlCode",
+  verifyAccessToken,
+  async (req,res) => {
+    const urlCode = req.params.urlCode;
+    if (!urlCode) {
+      res.status(400).send("Bad request");
+    }
+    try {
+      const data = await deleteUrlByUrlCode(urlCode);
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json("Internal server error");
+    }
+  }
+);
+
+
+
 export default router;

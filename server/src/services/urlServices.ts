@@ -49,3 +49,14 @@ export const createUrl = async (payload: UrlPayloadType) => {
     }
   };
   
+
+
+  export const deleteUrlByUrlCode = async (urlCode: string) => {
+    try {
+      const deleted = await Url.deleteOne({ urlCode });
+      return "Deleted successfully";
+    } catch (error) {
+      console.log(error);
+      Error(error);
+    }
+  };
